@@ -40,18 +40,41 @@ int		main()
 	 * receive data from server
 	 */
 	int	msg_size = 1000;
-	char server_response[msg_size + 1];
+	char send_msg[msg_size + 1];
+	char recv_msg[msg_size + 1];
+	char *replace;
 	while (1)
 	{
-		bzero(server_response, 1000);
-		recv(socketfd, &server_response, sizeof(server_response), 0);
-		if (strcmp(server_response, "exit") == 0)
+		bzero(recv_msg, 1000);
+		bzero(send_msg, 1000);
+		if (fgets(send_msg, 1000, stdin))
 		{
-			printf("received [%s]\nclosing client socket\n", server_response);
+			replace = strchr(send_msg, '\n');
+			*replace ='\0';
+			printf("sending msg to server[%s]\n", send_msg);
+		}
+		if (strcmp(send_msg, "exit") == 0)
+		{
+			send(socketfd, "exit", 4, 0);
+			printf("closing server properly\n");
 			close(socketfd);
 			exit(0);
 		}
-		printf("server sent[%s]\n", server_response);
+		else
+			send(socketfd, send_msg, strlen(send_msg), 0);
+		recv(socketfd, &recv_msg, sizeof(recv_msg), 0);
+		printf("received from server[%s]\n", recv_msg);
+		/*
+		bzero(send_msg, 1000);
+		recv(socketfd, &send_msg, sizeof(send_msg), 0);
+		if (strcmp(send_msg, "exit") == 0)
+		{
+			printf("received [%s]\nclosing client socket\n", send_msg);
+			close(socketfd);
+			exit(0);
+		}
+		printf("server sent[%s]\n", send_msg);
+		*/
 	}
 	close(socketfd);
 	printf("client socket closed\n");

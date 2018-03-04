@@ -38,7 +38,7 @@ int		main()
 	/*
 	 * listen
 	 */
-	listen(server_socket, 5);	/*5 is backlog number, max num of connections */
+	listen(server_socket, 5);	
 	
 	/*
 	 * create client socket
@@ -50,28 +50,44 @@ int		main()
 	 * send message
 	 */
 	int msg_size = 1000;
-	char send_msg[msg_size + 1];
+	char recv_msg[msg_size + 1];
 	char *replace;
 	while (1)
 	{
-		bzero(send_msg, 1000);
-		if (fgets(send_msg, 1000, stdin))
+		bzero(recv_msg, 1000);
+		recv(client_socket, &recv_msg, sizeof(recv_msg), 0);
+		if (strcmp(recv_msg, "exit") == 0)
 		{
-			replace = strchr(send_msg, '\n');
+			printf("received[%s]\nclosing server socket properly\n", recv_msg);
+			close(server_socket);
+			exit(0);
+		}
+		if (strncmp(recv_msg, "ping", 4) == 0)
+			send(client_socket, "pong\npong\n", 10, 0);
+		else
+		{
+			send(client_socket, "Not a ping! Go away!\n", 21, 0);
+			printf("client sent[%s]\n", recv_msg);
+		}
+			/*
+		if (fgets(recv_msg, 1000, stdin))
+		{
+			replace = strchr(recv_msg, '\n');
 			*replace = '\0';
-			printf("sending msg to client[%s]\n", send_msg);
-		if (strcmp(send_msg, "exit") == 0)
+			printf("sending msg to client[%s]\n", recv_msg);
+		if (strcmp(recv_msg, "exit") == 0)
 		{
 			send(client_socket, "exit", 4, 0);
 			printf("closing server properly\n");
 			close(server_socket);
 			exit(0);
 		}
-		if (strcmp(send_msg, "ping") == 0)
+		if (strcmp(recv_msg, "ping") == 0)
 			send(client_socket, "pong\npong\n", 10, 0);
 		else
-			send(client_socket, send_msg, strlen(send_msg), 0);
+			send(client_socket, recv_msg, strlen(recv_msg), 0);
 		}
+		*/
 	}
 	printf("closing socket to server\n");
 	close(server_socket);
